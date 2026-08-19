@@ -43,23 +43,145 @@
     @enderror
 </div>
 
+@php
+    $hasExistingPhoto = isset($cliente) && $cliente->photo_url;
+    $existingPhotoName = $hasExistingPhoto ? basename($cliente->photo_path) : null;
+@endphp
+
 <div class="mb-6">
     <label for="photo"
            class="block text-sm font-medium mb-1">Foto</label>
-    @if (isset($cliente) && $cliente->photo_url)
-        <img src="{{ $cliente->photo_url }}"
-             alt="Foto de {{ $cliente->name }}"
-             class="h-16 w-16 rounded-full object-cover mb-2">
-    @endif
-    <input type="file"
-           id="photo"
-           name="photo"
-           accept="image/*"
-           class="block">
+
+    <div class="flex items-center gap-4 rounded-lg border border-gray-300 p-3">
+        <img id="photo-preview"
+             src="{{ $cliente->photo_url ?? '' }}"
+             alt="Pré-visualização da foto"
+             class="h-14 w-14 shrink-0 rounded-full object-cover {{ $hasExistingPhoto ? '' : 'hidden' }}">
+        <span id="photo-placeholder"
+              class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 {{ $hasExistingPhoto ? 'hidden' : '' }}">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24"
+                 fill="currentColor"
+                 class="h-6 w-6">
+                <path fill-rule="evenodd"
+                      d="M1.5 6A2.25 2.25 0 0 1 3.75 3.75h16.5A2.25 2.25 0 0 1 22.5 6v12a2.25 2.25 0 0 1-2.25 2.25H3.75A2.25 2.25 0 0 1 1.5 18V6Zm18 3.75a.75.75 0 0 0-1.5 0v.041a5.25 5.25 0 0 1-1.183 3.311l-2.09 2.596-1.573-1.573a2.25 2.25 0 0 0-3.182 0l-4.5 4.5a.75.75 0 0 0 1.06 1.06l4.5-4.5a.75.75 0 0 1 1.061 0l1.94 1.94a.75.75 0 0 0 1.14-.094l2.635-3.272A6.75 6.75 0 0 0 19.5 9.79V9.75Z"
+                      clip-rule="evenodd" />
+            </svg>
+        </span>
+
+        <div class="min-w-0 flex-1">
+            <input type="file"
+                   id="photo"
+                   name="photo"
+                   accept="image/*"
+                   class="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border-0 file:bg-gray-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-gray-700">
+            <p id="photo-filename"
+               class="mt-1 truncate text-xs text-gray-500">
+                {{ $existingPhotoName ?? 'Nenhuma imagem selecionada' }}
+            </p>
+        </div>
+
+        <button type="button"
+                id="photo-remove"
+                title="Remover seleção"
+                class="shrink-0 rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-600 {{ $hasExistingPhoto ? '' : 'hidden' }}">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 20 20"
+                 fill="currentColor"
+                 class="h-5 w-5">
+                <path
+                      d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+            </svg>
+        </button>
+    </div>
+
     @error('photo')
         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
     @enderror
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('photo');
+        const preview = document.getElementById('photo-preview');
+        const placeholder = document.getElementById('photo-placeholder');
+        const filenameEl = document.getElementById('photo-filename');
+        const removeBtn = document.getElementById('photo-remove');
+
+        if (!input || !preview) {
+            return;
+        }
+
+        const originalSrc = preview.getAttribute('src') || '';
+        const originalFilename = filenameEl ? filenameEl.textContent.trim() : '';
+        const hadOriginalPhoto = !preview.classList.contains('hidden');
+
+        function showPreview(src, filename) {
+            preview.src = src;
+            preview.classList.remove('hidden');
+
+            if (placeholder) {
+                placeholder.classList.add('hidden');
+            }
+
+            if (filenameEl) {
+                filenameEl.textContent = filename;
+            }
+
+            if (removeBtn) {
+                removeBtn.classList.remove('hidden');
+            }
+        }
+
+        function resetPreview() {
+            if (hadOriginalPhoto) {
+                preview.src = originalSrc;
+                preview.classList.remove('hidden');
+
+                if (placeholder) {
+                    placeholder.classList.add('hidden');
+                }
+            } else {
+                preview.classList.add('hidden');
+                preview.removeAttribute('src');
+
+                if (placeholder) {
+                    placeholder.classList.remove('hidden');
+                }
+            }
+
+            if (filenameEl) {
+                filenameEl.textContent = originalFilename || 'Nenhuma imagem selecionada';
+            }
+
+            if (removeBtn) {
+                removeBtn.classList.toggle('hidden', !hadOriginalPhoto);
+            }
+        }
+
+        input.addEventListener('change', function() {
+            const file = input.files && input.files[0];
+
+            if (!file) {
+                resetPreview();
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                showPreview(e.target.result, file.name);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function() {
+                input.value = '';
+                resetPreview();
+            });
+        }
+    });
+</script>
 
 <div class="flex gap-2">
     <button type="submit"
