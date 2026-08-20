@@ -9,16 +9,28 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Yajra\DataTables\Facades\DataTables;
 
 class ClienteController extends Controller {
     public function index(): View {
         try {
-            $clientes = Cliente::latest()->paginate(10);
-
-            return view('clientes.index', compact('clientes'));
+            return view('clientes.index');
         } catch (\Throwable) {
             abort(404);
         }
+    }
+
+    /**
+     * Fonte de dados AJAX (server-side) para o DataTable de clientes.
+     */
+    public function all(): JsonResponse {
+        $clientes = Cliente::query()->select(['id', 'name', 'email', 'phone', 'photo_path']);
+
+        return DataTables::of($clientes)
+            ->addColumn('foto', fn (Cliente $cliente) => view('clientes.datatable._foto_column', compact('cliente'))->render())
+            ->addColumn('acoes', fn (Cliente $cliente) => view('clientes.datatable._acoes_column', compact('cliente'))->render())
+            ->rawColumns(['foto', 'acoes'])
+            ->make(true);
     }
 
     public function create(): View|RedirectResponse {

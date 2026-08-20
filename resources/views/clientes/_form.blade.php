@@ -52,7 +52,8 @@
     <label for="photo"
            class="block text-sm font-medium mb-1">Foto</label>
 
-    <div class="flex items-center gap-4 rounded-lg border border-gray-300 p-3">
+    <label for="photo"
+           class="flex cursor-pointer items-center gap-4 rounded-lg border border-gray-300 p-3 hover:border-gray-400 hover:bg-gray-50">
         <img id="photo-preview"
              src="{{ $cliente->photo_url ?? '' }}"
              alt="Pré-visualização da foto"
@@ -74,9 +75,9 @@
                    id="photo"
                    name="photo"
                    accept="image/*"
-                   class="block w-full text-sm text-gray-600 file:mr-3 file:rounded file:border-0 file:bg-gray-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-gray-700">
+                   class="sr-only">
             <p id="photo-filename"
-               class="mt-1 truncate text-xs text-gray-500">
+               class="truncate text-sm text-gray-600">
                 {{ $existingPhotoName ?? 'Nenhuma imagem selecionada' }}
             </p>
         </div>
@@ -93,95 +94,16 @@
                       d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
             </svg>
         </button>
-    </div>
+    </label>
 
     @error('photo')
         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
     @enderror
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const input = document.getElementById('photo');
-        const preview = document.getElementById('photo-preview');
-        const placeholder = document.getElementById('photo-placeholder');
-        const filenameEl = document.getElementById('photo-filename');
-        const removeBtn = document.getElementById('photo-remove');
-
-        if (!input || !preview) {
-            return;
-        }
-
-        const originalSrc = preview.getAttribute('src') || '';
-        const originalFilename = filenameEl ? filenameEl.textContent.trim() : '';
-        const hadOriginalPhoto = !preview.classList.contains('hidden');
-
-        function showPreview(src, filename) {
-            preview.src = src;
-            preview.classList.remove('hidden');
-
-            if (placeholder) {
-                placeholder.classList.add('hidden');
-            }
-
-            if (filenameEl) {
-                filenameEl.textContent = filename;
-            }
-
-            if (removeBtn) {
-                removeBtn.classList.remove('hidden');
-            }
-        }
-
-        function resetPreview() {
-            if (hadOriginalPhoto) {
-                preview.src = originalSrc;
-                preview.classList.remove('hidden');
-
-                if (placeholder) {
-                    placeholder.classList.add('hidden');
-                }
-            } else {
-                preview.classList.add('hidden');
-                preview.removeAttribute('src');
-
-                if (placeholder) {
-                    placeholder.classList.remove('hidden');
-                }
-            }
-
-            if (filenameEl) {
-                filenameEl.textContent = originalFilename || 'Nenhuma imagem selecionada';
-            }
-
-            if (removeBtn) {
-                removeBtn.classList.toggle('hidden', !hadOriginalPhoto);
-            }
-        }
-
-        input.addEventListener('change', function() {
-            const file = input.files && input.files[0];
-
-            if (!file) {
-                resetPreview();
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                showPreview(e.target.result, file.name);
-            };
-            reader.readAsDataURL(file);
-        });
-
-        if (removeBtn) {
-            removeBtn.addEventListener('click', function() {
-                input.value = '';
-                resetPreview();
-            });
-        }
-    });
-</script>
+@section('scripts')
+    @vite(['resources/js/clientes/form.js'])
+@endsection
 
 <div class="flex gap-2">
     <button type="submit"

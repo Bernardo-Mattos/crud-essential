@@ -8,6 +8,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::prefix('clientes')->name('clientes.')->group(function () {
     Route::get('/', [ClienteController::class, 'index'])->name('index');
+    Route::get('/all', [ClienteController::class, 'all'])->name('all');
     Route::get('/criar', [ClienteController::class, 'create'])->name('create');
     Route::post('/', [ClienteController::class, 'store'])->name('store');
     Route::get('/{cliente}/editar', [ClienteController::class, 'edit'])->name('edit');

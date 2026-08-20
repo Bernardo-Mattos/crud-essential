@@ -7,3 +7,22 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* DataTables — paleta alinhada ao resto do app (ver resources/views/clientes/index.blade.php) */
+.dt-container {
+    --dt-input_border: 1px solid #d1d5db;
+    --dt-input_border-radius: 0.25rem;
+    --dt-input_padding: 0.5rem 0.75rem;
+    --dt-paging-button_border-radius: 0.25rem;
+    --dt-paging-button_background-current: #111827;
+    --dt-paging-button_border-current: 1px solid #111827;
+    --dt-paging-button_color-current: #fff;
+    --dt-paging-button_background-current-hover: #1f2937;
+    --dt-paging-button_border-current-hover: 1px solid #1f2937;
+    font-family: inherit;
+    font-size: 0.875rem;
+}
+
+.dt-container thead {
+    background-color: #f3f4f6;
+}
